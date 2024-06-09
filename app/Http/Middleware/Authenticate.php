@@ -15,7 +15,7 @@ class Authenticate extends Middleware
         if($request->expectsJson()) {
             return response()->json([
                 'status' => Response::HTTP_UNAUTHORIZED,
-                'error' => 'Unauthenticated'
+                'error' => 'Unauthorized.'
             ], Response::HTTP_UNAUTHORIZED);
         };
     }
