@@ -7,9 +7,14 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * @OA\Schema(
- *     schema="Login",
+ *     schema="User",
  *     type="object",
- *     required={"email", "password"},
+ *     required={"name", "email", "password", "password_confirmation"},
+ *     @OA\Property(
+ *         property="name",
+ *         type="string",
+ *         description="User's name"
+ *     ),
  *     @OA\Property(
  *         property="email",
  *         type="string",
@@ -20,13 +25,19 @@ use Illuminate\Foundation\Http\FormRequest;
  *         type="string",
  *         format="password",
  *         description="User's password"
+ *     ),
+ *     @OA\Property(
+ *         property="password_confirmation",
+ *         type="string",
+ *         format="password",
+ *         description="User's password confirmation"
  *     )
  * )
  */
-class LoginRequest extends FormRequest
+class UserRequest extends FormRequest
 {
     use AppErrorResponse;
-    
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -43,8 +54,9 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email',
-            'password' => 'required|min:8',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
         ];
-    }
+    }    
 }

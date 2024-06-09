@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\LoginController;
+use App\Http\Controllers\API\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,9 +15,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+//LoginController
 Route::post('/login', [LoginController::class, 'loginUser']);
-
 Route::middleware('auth:api')->group(function () {
     Route::get('/user-detail', [LoginController::class, 'userDetails']);
     Route::post('/logout', [LoginController::class, 'logoutUser']);
 });
+
+//UserController
+Route::post('/register', [UserController::class, 'registerUser']);
