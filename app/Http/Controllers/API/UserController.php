@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @OA\Info(
- *     title="Your API Title",
+ *     title="Budget Buddy",
  *     version="1.0.0",
  *     description="BudgetBuddy API Doc"
  * )
@@ -39,7 +39,7 @@ class UserController extends Controller
      *         @OA\JsonContent(
      *             required={"name","email","password"},
      *             @OA\Property(property="name", type="string", example="Manoj"),
-     *             @OA\Property(property="email", type="string", example="manoj@gmail.com"),
+     *             @OA\Property(property="email", type="email", example="manoj@gmail.com"),
      *             @OA\Property(property="password", type="string", format="password", example="12345678"),
      *             @OA\Property(property="password_confirmation", type="string", format="password", example="12345678")
      *         )
@@ -74,7 +74,6 @@ class UserController extends Controller
      * )
      */
     public function registerUser(UserRequest $request) {
-
         try {
             DB::beginTransaction();
             $user = $this->user->create([

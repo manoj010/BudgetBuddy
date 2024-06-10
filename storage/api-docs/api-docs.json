@@ -1,7 +1,7 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Your API Title",
+        "title": "Budget Buddy",
         "description": "BudgetBuddy API Doc",
         "version": "1.0.0"
     },
@@ -304,7 +304,7 @@
                                         "example": "Manoj"
                                     },
                                     "email": {
-                                        "type": "string",
+                                        "type": "email",
                                         "example": "manoj@gmail.com"
                                     },
                                     "password": {

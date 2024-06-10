@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\CategoryController\IncomeCategoryController;
 use App\Http\Controllers\API\LoginController;
 use App\Http\Controllers\API\UserController;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,8 @@ Route::post('/login', [LoginController::class, 'loginUser']);
 Route::middleware('auth:api')->group(function () {
     Route::get('/user-detail', [LoginController::class, 'userDetails']);
     Route::post('/logout', [LoginController::class, 'logoutUser']);
+
+    Route::apiResource('income-category', IncomeCategoryController::class);
 });
 
 //UserController
