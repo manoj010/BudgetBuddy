@@ -6,18 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\BaseCategoryRequest;
 use App\Http\Resources\Category\BaseCategoryCollection;
 use App\Http\Resources\Category\BaseCategoryResource;
-use App\Models\API\Category\IncomeCategory;
+use App\Models\API\Category\ExpenseCategory;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
-class IncomeCategoryController extends Controller
+class ExpenseCategoryController extends Controller
 {
-    protected $income_cat;
+    protected $expense_cat;
 
-    public function __construct(IncomeCategory $income_cat)
+    public function __construct(ExpenseCategory $expense_cat)
     {
-        $this->income_cat = $income_cat;
+        $this->expense_cat = $expense_cat;
     }
 
     /**
@@ -27,23 +27,23 @@ class IncomeCategoryController extends Controller
     {
         $user = auth()->user();
 
-        $incomeCategories = $this->income_cat->where('user_id', $user->id)->get();
+        $expenseCategories = $this->expense_cat->where('user_id', $user->id)->get();
 
-        if ($incomeCategories->isEmpty()) {
+        if ($expenseCategories->isEmpty()) {
             return response()->json([
                 'status' => 'error',
                 'code' => Response::HTTP_NOT_FOUND,
-                'message' => 'No income categories found for the authenticated user'
+                'message' => 'No expense categories found for the authenticated user'
             ], Response::HTTP_NOT_FOUND);
         }
 
         return response()->json([
             'status' => 'success',
             'code' => Response::HTTP_OK,
-            'data' => new BaseCategoryCollection($incomeCategories)
+            'data' => new BaseCategoryCollection($expenseCategories)
         ], Response::HTTP_OK);
     }
-
+    
     /**
      * Store a newly created resource in storage.
      */
@@ -51,7 +51,7 @@ class IncomeCategoryController extends Controller
     {
         try {
             DB::beginTransaction();
-            $income_cat = $this->income_cat->create([
+            $expense_cat = $this->expense_cat->create([
                 'user_id' => $user->id,
                 'name' => $request->name,
                 'description' => $request->description,
@@ -61,7 +61,7 @@ class IncomeCategoryController extends Controller
             return response()->json([
                 'status' => 'success',
                 'code' => Response::HTTP_CREATED,
-                'data' => new BaseCategoryResource($income_cat)
+                'data' => new BaseCategoryResource($expense_cat)
             ], Response::HTTP_CREATED);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -80,13 +80,13 @@ class IncomeCategoryController extends Controller
     {
         $user = auth()->user();
 
-        $incomeCategory = $this->income_cat->where('user_id', $user->id)->find($categoryId);
+        $expenseCategory = $this->expense_cat->where('user_id', $user->id)->find($categoryId);
 
-        if (is_null($incomeCategory)) {
+        if (is_null($expenseCategory)) {
             return response()->json([
                 'status' => 'error',
                 'code' => Response::HTTP_NOT_FOUND,
-                'message' => 'Income category not found'
+                'message' => 'Expense category not found'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -94,7 +94,7 @@ class IncomeCategoryController extends Controller
             return response()->json([
                 'status' => 'success',
                 'code' => Response::HTTP_OK,
-                'data' => new BaseCategoryResource($incomeCategory)
+                'data' => new BaseCategoryResource($expenseCategory)
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
             return response()->json([
@@ -108,13 +108,13 @@ class IncomeCategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(BaseCategoryRequest $request, IncomeCategory $incomeCategory)
+    public function update(BaseCategoryRequest $request, ExpenseCategory $expenseCategory)
     {
         $user = auth()->user();
 
-        // dd($user->id, $incomeCategory->user_id);
+        // dd($user->id, $expenseCategory->user_id);
 
-        if ($incomeCategory->user_id !== $user->id) {
+        if ($expenseCategory->user_id !== $user->id) {
             return response()->json([
                 'status' => 'error',
                 'code' => Response::HTTP_FORBIDDEN,
@@ -124,12 +124,12 @@ class IncomeCategoryController extends Controller
 
         try {
             DB::beginTransaction();
-            $incomeCategory->update($request->validated());
+            $expenseCategory->update($request->validated());
             DB::commit();
             return response()->json([
                 'status' => 'success',
                 'code' => Response::HTTP_OK,
-                'data' => new BaseCategoryResource($incomeCategory),
+                'data' => new BaseCategoryResource($expenseCategory),
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -144,13 +144,13 @@ class IncomeCategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(IncomeCategory $incomeCategory)
+    public function destroy(ExpenseCategory $expenseCategory)
     {
         $user = auth()->user();
 
-        // dd($user->id, $incomeCategory->user_id);
+        // dd($user->id, $expenseCategory->user_id);
 
-        if ($incomeCategory->user_id !== $user->id) {
+        if ($expenseCategory->user_id !== $user->id) {
             return response()->json([
                 'status' => 'error',
                 'code' => Response::HTTP_FORBIDDEN,
@@ -160,12 +160,12 @@ class IncomeCategoryController extends Controller
 
         try {
             DB::beginTransaction();
-            $incomeCategory->delete();
+            $expenseCategory->delete();
             DB::commit();
             return response()->json([
                 'status' => 'success',
                 'code' => Response::HTTP_OK,
-                'message' => 'Income Category successfully Deleted'
+                'message' => 'Expense Category successfully Deleted'
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
             DB::rollBack();
