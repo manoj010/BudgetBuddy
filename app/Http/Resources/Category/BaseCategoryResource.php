@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Resources\Category\IncomeCategory;
+namespace App\Http\Resources\Category;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class IncomeCategoryResource extends JsonResource
+class BaseCategoryResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,7 +17,6 @@ class IncomeCategoryResource extends JsonResource
         $item = $this -> resource;
         return [
             'id' => $item->id,
-            'user_id' => $item->user_id,
             'name' => $item->name,
             'description' => $item->description,
             'created_at' => $item->created_at,

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\API\CategoryController;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CategoryRequests\IncomeCategoryRequest;
-use App\Http\Resources\Category\IncomeCategory\IncomeCategoryCollection;
-use App\Http\Resources\Category\IncomeCategory\IncomeCategoryResource;
-use App\Models\API\CategoryModels\IncomeCategory;
+use App\Http\Requests\BaseCategoryRequest;
+use App\Http\Resources\Category\BaseCategoryCollection;
+use App\Http\Resources\Category\BaseCategoryResource;
+use App\Models\API\BaseCategory;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,7 +15,7 @@ class IncomeCategoryController extends Controller
 {
     protected $income_cat;
 
-    public function __construct(IncomeCategory $income_cat)
+    public function __construct(BaseCategory $income_cat)
     {
         $this->income_cat = $income_cat;
     }
@@ -40,14 +40,14 @@ class IncomeCategoryController extends Controller
         return response()->json([
             'status' => 'success',
             'code' => Response::HTTP_OK,
-            'data' => new IncomeCategoryCollection($incomeCategories)
+            'data' => new BaseCategoryCollection($incomeCategories)
         ], Response::HTTP_OK);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(IncomeCategoryRequest $request, Authenticatable $user)
+    public function store(BaseCategoryRequest $request, Authenticatable $user)
     {
         try {
             DB::beginTransaction();
@@ -61,7 +61,7 @@ class IncomeCategoryController extends Controller
             return response()->json([
                 'status' => 'success',
                 'code' => Response::HTTP_CREATED,
-                'data' => new IncomeCategoryResource($income_cat)
+                'data' => new BaseCategoryResource($income_cat)
             ], Response::HTTP_CREATED);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -94,7 +94,7 @@ class IncomeCategoryController extends Controller
             return response()->json([
                 'status' => 'success',
                 'code' => Response::HTTP_OK,
-                'data' => new IncomeCategoryResource($incomeCategory)
+                'data' => new BaseCategoryResource($incomeCategory)
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
             return response()->json([
@@ -108,7 +108,7 @@ class IncomeCategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(IncomeCategoryRequest $request, IncomeCategory $incomeCategory)
+    public function update(BaseCategoryRequest $request, BaseCategory $incomeCategory)
     {
         $user = auth()->user();
 
@@ -129,7 +129,7 @@ class IncomeCategoryController extends Controller
             return response()->json([
                 'status' => 'success',
                 'code' => Response::HTTP_OK,
-                'data' => new IncomeCategoryResource($incomeCategory),
+                'data' => new BaseCategoryResource($incomeCategory),
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -144,7 +144,7 @@ class IncomeCategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(IncomeCategory $incomeCategory)
+    public function destroy(BaseCategory $incomeCategory)
     {
         $user = auth()->user();
 
@@ -156,6 +156,8 @@ class IncomeCategoryController extends Controller
                 'code' => Response::HTTP_FORBIDDEN,
                 'message' => 'You do not have permission to delete this resource'
             ], Response::HTTP_FORBIDDEN);
+        } else {
+            dd('test');
         }
 
         try {
@@ -165,7 +167,7 @@ class IncomeCategoryController extends Controller
             return response()->json([
                 'status' => 'success',
                 'code' => Response::HTTP_OK,
-                'message' => 'Income Category Deleted'
+                'message' => 'Income Category successfully Deleted'
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
             DB::rollBack();

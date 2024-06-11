@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Models\API\CategoryModels;
+namespace App\Models\API;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class IncomeCategory extends Model
+class BaseCategory extends Model
 {
     use HasFactory, SoftDeletes;
 
