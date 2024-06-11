@@ -8,8 +8,6 @@ use App\Http\Resources\Category\IncomeCategory\IncomeCategoryCollection;
 use App\Http\Resources\Category\IncomeCategory\IncomeCategoryResource;
 use App\Models\API\CategoryModels\IncomeCategory;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -19,7 +17,7 @@ class IncomeCategoryController extends Controller
 
     public function __construct(IncomeCategory $income_cat)
     {
-        $this -> income_cat = $income_cat;
+        $this->income_cat = $income_cat;
     }
 
     /**
@@ -28,9 +26,9 @@ class IncomeCategoryController extends Controller
     public function index()
     {
         $user = auth()->user();
-    
+
         $incomeCategories = $this->income_cat->where('user_id', $user->id)->get();
-    
+
         if ($incomeCategories->isEmpty()) {
             return response()->json([
                 'status' => 'error',
@@ -42,7 +40,7 @@ class IncomeCategoryController extends Controller
         return response()->json([
             'status' => 'success',
             'code' => Response::HTTP_OK,
-            'income_categories' => new IncomeCategoryCollection($incomeCategories)
+            'data' => new IncomeCategoryCollection($incomeCategories)
         ], Response::HTTP_OK);
     }
 
@@ -59,10 +57,11 @@ class IncomeCategoryController extends Controller
                 'description' => $request->description,
             ]);
             DB::commit();
+
             return response()->json([
                 'status' => 'success',
                 'code' => Response::HTTP_CREATED,
-                'income_category' => $income_cat
+                'data' => new IncomeCategoryResource($income_cat)
             ], Response::HTTP_CREATED);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -79,7 +78,9 @@ class IncomeCategoryController extends Controller
      */
     public function show($categoryId = null)
     {
-        $incomeCategory = $this->income_cat->find($categoryId);
+        $user = auth()->user();
+
+        $incomeCategory = $this->income_cat->where('user_id', $user->id)->find($categoryId);
 
         if (is_null($incomeCategory)) {
             return response()->json([
@@ -89,26 +90,90 @@ class IncomeCategoryController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        return response()->json([
-            'status' => 'success',
-            'code' => Response::HTTP_OK,
-            'income_category' => new IncomeCategoryResource($incomeCategory)
-        ], Response::HTTP_OK);
+        try {
+            return response()->json([
+                'status' => 'success',
+                'code' => Response::HTTP_OK,
+                'data' => new IncomeCategoryResource($incomeCategory)
+            ], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
+                'message' => 'An error occurred: ' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(IncomeCategoryRequest $request, IncomeCategory $incomeCategory)
     {
-        //
+        $user = auth()->user();
+
+        // dd($user->id, $incomeCategory->user_id);
+
+        if ($incomeCategory->user_id !== $user->id) {
+            return response()->json([
+                'status' => 'error',
+                'code' => Response::HTTP_FORBIDDEN,
+                'message' => 'You do not have permission to update this resource'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        try {
+            DB::beginTransaction();
+            $incomeCategory->update($request->validated());
+            DB::commit();
+            return response()->json([
+                'status' => 'success',
+                'code' => Response::HTTP_OK,
+                'data' => new IncomeCategoryResource($incomeCategory),
+            ], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
+                'message' => 'An error occurred: ' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(IncomeCategory $incomeCategory)
     {
-        //
+        $user = auth()->user();
+
+        // dd($user->id, $incomeCategory->user_id);
+
+        if ($incomeCategory->user_id !== $user->id) {
+            return response()->json([
+                'status' => 'error',
+                'code' => Response::HTTP_FORBIDDEN,
+                'message' => 'You do not have permission to delete this resource'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        try {
+            DB::beginTransaction();
+            $incomeCategory->delete();
+            DB::commit();
+            return response()->json([
+                'status' => 'success',
+                'code' => Response::HTTP_OK,
+                'message' => 'Income Category Deleted'
+            ], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
+                'message' => 'An error occurred: ' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } 
     }
 }

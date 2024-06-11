@@ -14,6 +14,14 @@ class IncomeCategoryResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        $item = $this -> resource;
+        return [
+            'id' => $item->id,
+            'user_id' => $item->user_id,
+            'name' => $item->name,
+            'description' => $item->description,
+            'created_at' => $item->created_at,
+            'updated_at' => $item->updated_at,
+        ];
     }
 }
