@@ -32,7 +32,7 @@ class LoginController extends Controller
      *             @OA\Property(property="status", type="string", example="success"),
      *             @OA\Property(property="code", type="integer", example=200),
      *             @OA\Property(property="expires_at", type="integer", example=1717932517),
-     *             @OA\Property(property="token", type="string", example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+     *             @OA\Property(property="token", type="string", example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpJ9...")
      *         )
      *     ),
      *     @OA\Response(

@@ -5,6 +5,7 @@ use App\Http\Controllers\API\CategoryController\IncomeCategoryController;
 use App\Http\Controllers\API\CategoryController\LoanCategoryController;
 use App\Http\Controllers\API\CategoryController\SavingCategoryController;
 use App\Http\Controllers\API\LoginController;
+use App\Http\Controllers\API\TransactionsController\IncomeController;
 use App\Http\Controllers\API\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +30,8 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('expense-category', ExpenseCategoryController::class);
     Route::apiResource('saving-category', SavingCategoryController::class);
     Route::apiResource('loan-category', LoanCategoryController::class);
+
+    Route::apiResource('income', IncomeController::class);
 });
 
 //UserController
