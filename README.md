@@ -97,6 +97,5 @@
 
 ## Swagger Documentation
 
-    The project documentation will be available at [http://localhost:8000/api/documentation#/](http://localhost:8000/api/documentation#/).
-
+    The project documentation will be available at [http://localhost:8000/api/documentation#/].
 
