@@ -2,10 +2,15 @@
 
 ## Table of Contents
 
+- [Introduction](#introduction)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Running the Project](#running-the-project)
 - [Swagger Documentation](#swagger-documentation)
+
+## Introduction
+    Budget Buddy API
+    API for a personal financial detail.
 
 ## Installation
 
@@ -23,12 +28,22 @@
     composer install
     ```
 
-3. **Install npm dependencies**
-
-    Make sure you have [Node.js](https://nodejs.org/) and npm installed.
+    Make sure you have [Laravel-Passport](https://laravel.com/docs/10.x/passport) installed.
 
     ```sh
-    npm install
+    composer require laravel/passport
+    ```
+
+    Make sure you have [Symfony-HttpFoundation](https://symfony.com/components/HttpFoundation) installed.
+
+    ```sh
+    composer require symfony/http-foundation
+    ```
+
+    Make sure you have [Swagger](https://swagger.io/) installed.
+    
+    ```sh
+    composer require zircote/swagger-php
     ```
 
 ## Configuration
@@ -80,6 +95,8 @@
 
     The project will be available at [http://localhost:8000](http://localhost:8000).
 
-## Database Migration
+## Swagger Documentation
+
+    The project documentation will be available at [http://localhost:8000/api/documentation#/](http://localhost:8000/api/documentation#/).
 
 
