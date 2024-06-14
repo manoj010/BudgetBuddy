@@ -7,17 +7,23 @@ use App\Http\Requests\BaseCategoryRequest;
 use App\Http\Resources\Category\BaseCategoryCollection;
 use App\Http\Resources\Category\BaseCategoryResource;
 use App\Models\API\Category\ExpenseCategory;
+use App\Services\UserService;
+use App\Traits\ResourceNotFound;
+use App\Traits\UserOwnership;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
 class ExpenseCategoryController extends Controller
 {
-    protected $expense_cat;
+    use UserOwnership, ResourceNotFound;
 
-    public function __construct(ExpenseCategory $expense_cat)
+    protected $expense_cat, $userService;
+
+    public function __construct(ExpenseCategory $expense_cat, UserService $userService)
     {
         $this->expense_cat = $expense_cat;
+        $this->userService = $userService;
     }
 
     /**
@@ -25,17 +31,13 @@ class ExpenseCategoryController extends Controller
      */
     public function index()
     {
-        $user = auth()->user();
+        $userId = $this->userService->getUserId();
 
-        $expenseCategories = $this->expense_cat->where('user_id', $user->id)->get();
-
-        if ($expenseCategories->isEmpty()) {
-            return response()->json([
-                'status' => 'error',
-                'code' => Response::HTTP_NOT_FOUND,
-                'message' => 'No expense categories found for the authenticated user'
-            ], Response::HTTP_NOT_FOUND);
+        if ($response = $this->checkResource($this->expense_cat, $userId)) {
+            return $response;
         }
+
+        $expenseCategories = $this->expense_cat->where('user_id', $userId)->get();
 
         return response()->json([
             'status' => 'success',
@@ -110,16 +112,8 @@ class ExpenseCategoryController extends Controller
      */
     public function update(BaseCategoryRequest $request, ExpenseCategory $expenseCategory)
     {
-        $user = auth()->user();
-
-        // dd($user->id, $expenseCategory->user_id);
-
-        if ($expenseCategory->user_id !== $user->id) {
-            return response()->json([
-                'status' => 'error',
-                'code' => Response::HTTP_FORBIDDEN,
-                'message' => 'You do not have permission to update this resource'
-            ], Response::HTTP_FORBIDDEN);
+        if ($response = $this->checkOwnership($expenseCategory)) {
+            return $response;
         }
 
         try {
@@ -146,16 +140,8 @@ class ExpenseCategoryController extends Controller
      */
     public function destroy(ExpenseCategory $expenseCategory)
     {
-        $user = auth()->user();
-
-        // dd($user->id, $expenseCategory->user_id);
-
-        if ($expenseCategory->user_id !== $user->id) {
-            return response()->json([
-                'status' => 'error',
-                'code' => Response::HTTP_FORBIDDEN,
-                'message' => 'You do not have permission to delete this resource'
-            ], Response::HTTP_FORBIDDEN);
+        if ($response = $this->checkDelete($expenseCategory)) {
+            return $response;
         }
 
         try {
