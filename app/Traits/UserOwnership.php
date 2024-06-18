@@ -17,7 +17,6 @@ trait UserOwnership
                 'message' => 'You do not have permission to update this resource'
             ], Response::HTTP_FORBIDDEN);
         }
-
         return null;
     }
 
@@ -32,7 +31,6 @@ trait UserOwnership
                 'message' => 'You do not have permission to delete this resource'
             ], Response::HTTP_FORBIDDEN);
         }
-
         return null;
     }
 }

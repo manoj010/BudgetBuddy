@@ -4,25 +4,22 @@ namespace App\Http\Controllers\API\CategoryController;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BaseCategoryRequest;
-use App\Http\Resources\Category\BaseCategoryCollection;
-use App\Http\Resources\Category\BaseCategoryResource;
+use App\Http\Resources\Category\{BaseCategoryCollection, BaseCategoryResource};
 use App\Models\API\Category\ExpenseCategory;
 use App\Services\UserService;
-use App\Traits\ResourceNotFound;
-use App\Traits\UserOwnership;
+use App\Traits\{AppResponse, UserOwnership};
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\Response;
 
 class ExpenseCategoryController extends Controller
 {
-    use UserOwnership, ResourceNotFound;
+    use UserOwnership, AppResponse;
 
-    protected $expense_cat, $userService;
+    protected $expensesCategory, $userService;
 
-    public function __construct(ExpenseCategory $expense_cat, UserService $userService)
+    public function __construct(ExpenseCategory $expensesCategory, UserService $userService)
     {
-        $this->expense_cat = $expense_cat;
+        $this->expensesCategory = $expensesCategory;
         $this->userService = $userService;
     }
 
@@ -32,18 +29,12 @@ class ExpenseCategoryController extends Controller
     public function index()
     {
         $userId = $this->userService->getUserId();
-
-        if ($response = $this->checkResource($this->expense_cat, $userId)) {
+        if ($response = $this->checkResource($this->expensesCategory, $userId)) {
             return $response;
         }
-
-        $expenseCategories = $this->expense_cat->where('user_id', $userId)->get();
-
-        return response()->json([
-            'status' => 'success',
-            'code' => Response::HTTP_OK,
-            'data' => new BaseCategoryCollection($expenseCategories)
-        ], Response::HTTP_OK);
+        $expenseCategories = $this->expensesCategory->where('user_id', $userId)->get();
+        $data = new BaseCategoryCollection($expenseCategories);
+        return $this->successResponse($data);
     }
     
     /**
@@ -53,57 +44,37 @@ class ExpenseCategoryController extends Controller
     {
         try {
             DB::beginTransaction();
-            $expense_cat = $this->expense_cat->create([
-                'user_id' => $user->id,
-                'name' => $request->name,
-                'description' => $request->description,
-            ]);
+            $validatedData = $request -> validated();
+            $validatedData['user_id'] = $user->id;
+            $expensesCategory = $this->expensesCategory->create($validatedData);
             DB::commit();
-
-            return response()->json([
-                'status' => 'success',
-                'code' => Response::HTTP_CREATED,
-                'data' => new BaseCategoryResource($expense_cat)
-            ], Response::HTTP_CREATED);
+            $data = new BaseCategoryResource($expensesCategory);
+            return $this->createdResponse($data);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status' => 'error',
-                'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
-                'message' => 'An error occurred: ' . $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this -> serverErrorResponse($e);
         }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show($categoryId = null)
+    public function show($id)
     {
-        $user = auth()->user();
+        $userId = auth()->id();
+        $message = 'Expense Category not found';
 
-        $expenseCategory = $this->expense_cat->where('user_id', $user->id)->find($categoryId);
-
-        if (is_null($expenseCategory)) {
-            return response()->json([
-                'status' => 'error',
-                'code' => Response::HTTP_NOT_FOUND,
-                'message' => 'Expense category not found'
-            ], Response::HTTP_NOT_FOUND);
+        if ($response = $this->findResource($this->expensesCategory, $id, $message)) {
+            return $response;
         }
 
+        $expenseCategory = $this->expensesCategory->where('user_id', $userId)->find($id);
         try {
-            return response()->json([
-                'status' => 'success',
-                'code' => Response::HTTP_OK,
-                'data' => new BaseCategoryResource($expenseCategory)
-            ], Response::HTTP_OK);
+            $data = new BaseCategoryResource($expenseCategory);
+            return $this -> successResponse($data);
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
-                'message' => 'An error occurred: ' . $e->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            DB::rollBack();
+            return $this -> serverErrorResponse($e);
         }
     }
 
@@ -120,18 +91,11 @@ class ExpenseCategoryController extends Controller
             DB::beginTransaction();
             $expenseCategory->update($request->validated());
             DB::commit();
-            return response()->json([
-                'status' => 'success',
-                'code' => Response::HTTP_OK,
-                'data' => new BaseCategoryResource($expenseCategory),
-            ], Response::HTTP_OK);
+            $data = new BaseCategoryResource($expenseCategory);
+            return $this -> successResponse($data);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status' => 'error',
-                'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
-                'message' => 'An error occurred: ' . $e->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this -> serverErrorResponse($e);
         }
     }
 
@@ -148,18 +112,11 @@ class ExpenseCategoryController extends Controller
             DB::beginTransaction();
             $expenseCategory->delete();
             DB::commit();
-            return response()->json([
-                'status' => 'success',
-                'code' => Response::HTTP_OK,
-                'message' => 'Expense Category successfully Deleted'
-            ], Response::HTTP_OK);
+            $message = 'Expense Category successfully Deleted';
+            return $this -> deleteResponse($message);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status' => 'error',
-                'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
-                'message' => 'An error occurred: ' . $e->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this -> serverErrorResponse($e);
         } 
     }
 }
