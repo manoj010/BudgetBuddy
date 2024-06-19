@@ -2,15 +2,16 @@
 
 namespace App\Traits;
 
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 trait UserOwnership
 {
     protected function checkOwnership($resource)
     {
-        $user = auth()->user();
+        $userId = Auth::user()->id;
 
-        if ($resource->user_id !== $user->id) {
+        if ($resource->user_id !== $userId) {
             return response()->json([
                 'status' => 'error',
                 'code' => Response::HTTP_FORBIDDEN,

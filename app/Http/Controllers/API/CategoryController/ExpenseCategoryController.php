@@ -62,9 +62,8 @@ class ExpenseCategoryController extends Controller
     public function show($id)
     {
         $userId = auth()->id();
-        $message = 'Expense Category not found';
 
-        if ($response = $this->findResource($this->expensesCategory, $id, $message)) {
+        if ($response = $this->findResource($this->expensesCategory, $id)) {
             return $response;
         }
 

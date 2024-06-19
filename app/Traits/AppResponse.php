@@ -42,7 +42,7 @@ trait AppResponse
         ], $code);
     }
 
-    protected function findResource($resource, $id, $message, $status = 'error', $code = Response::HTTP_NOT_FOUND)
+    protected function findResource($resource, $id, $message = 'Category Not Found', $status = 'error', $code = Response::HTTP_NOT_FOUND)
     {
         $userId = auth()->id();
         $resource = $resource->where('user_id', $userId)->find($id);

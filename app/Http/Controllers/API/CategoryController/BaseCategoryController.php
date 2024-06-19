@@ -1,0 +1,79 @@
+<?php
+
+namespace App\Http\Controllers\API\CategoryController;
+
+use App\Http\Controllers\Controller;
+use App\Http\Resources\Category\{BaseCategoryCollection, BaseCategoryResource};
+use App\Traits\{AppResponse, UserOwnership};
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+
+class BaseCategoryController extends Controller
+{    
+    use AppResponse, UserOwnership;
+
+    protected function allResource(Model $resource, Authenticatable $user)
+    {
+        $userId = $user->id;
+        if ($response = $this->checkResource($resource, $userId)) {
+            return $response;
+        }
+        $allResource = $resource->where('user_id', $userId)->get();
+        $data = new BaseCategoryCollection($allResource);
+        return $this->successResponse($data);
+    }
+
+    protected function createResource(array $validatedData, Model $resource, Authenticatable $user)
+    {
+        try {
+            DB::beginTransaction();
+            $validatedData['user_id'] = $user->id;
+            $createdResource = $resource->create($validatedData);
+            DB::commit();
+            $data = new BaseCategoryResource($createdResource);
+            return $this->createdResponse($data);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->serverErrorResponse($e);
+        }
+    }
+
+    protected function specificResource(Model $resource, Authenticatable $user, $id)
+    {
+        if ($response = $this->findResource($resource, $id)) {
+            return $response;
+        }
+
+        $specificResource = $resource->where('user_id', $user->id)->find($id);
+        try {
+            $data = new BaseCategoryResource($specificResource);
+            DB::commit();
+            return $this -> successResponse($data);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this -> serverErrorResponse($e);
+        }
+    }
+
+    protected function updateResource(array $validatedData, Model $resource)
+    {
+        // dd($resource);
+
+        if ($response = $this->checkOwnership($resource)) {
+            return $response;
+        }
+
+        try {
+            DB::beginTransaction();
+            $resource->update($validatedData);
+            $updatedResource = $resource->fresh();
+            DB::commit();
+            $data = new BaseCategoryResource($updatedResource);
+            return $this -> successResponse($data);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this -> serverErrorResponse($e);
+        }
+    }
+}
