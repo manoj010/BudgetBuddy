@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 trait UserOwnership
 {
+    //error-403//
     protected function checkOwnership($resource)
     {
         $userId = Auth::user()->id;

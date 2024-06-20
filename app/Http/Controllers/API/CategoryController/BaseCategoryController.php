@@ -4,24 +4,22 @@ namespace App\Http\Controllers\API\CategoryController;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Category\{BaseCategoryCollection, BaseCategoryResource};
-use App\Traits\{AppResponse, UserOwnership};
+use App\Traits\{AppErrorResponse, AppResponse, UserOwnership};
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 class BaseCategoryController extends Controller
 {    
-    use AppResponse, UserOwnership;
+    use AppResponse, UserOwnership, AppErrorResponse;
 
-    protected function allResource(Model $resource, Authenticatable $user)
+    protected function allResource(Model $resource)
     {
-        $userId = $user->id;
-        if ($response = $this->checkResource($resource, $userId)) {
-            return $response;
-        }
+        $userId = auth()->id();
+        $this->checkOrFindResource($resource);
         $allResource = $resource->where('user_id', $userId)->get();
-        $data = new BaseCategoryCollection($allResource);
-        return $this->successResponse($data);
+        // $data = new BaseCategoryCollection($allResource);
+        return $this->successResponse($allResource);
     }
 
     protected function createResource(array $validatedData, Model $resource, Authenticatable $user)
@@ -41,15 +39,11 @@ class BaseCategoryController extends Controller
 
     protected function specificResource(Model $resource, Authenticatable $user, $id)
     {
-        if ($response = $this->findResource($resource, $id)) {
-            return $response;
-        }
-
+        $this->checkOrFindResource($resource, $id);
         $specificResource = $resource->where('user_id', $user->id)->find($id);
         try {
-            $data = new BaseCategoryResource($specificResource);
             DB::commit();
-            return $this -> successResponse($data);
+            return $this -> successResponse($specificResource);
         } catch (\Exception $e) {
             DB::rollBack();
             return $this -> serverErrorResponse($e);
@@ -58,12 +52,7 @@ class BaseCategoryController extends Controller
 
     protected function updateResource(array $validatedData, Model $resource)
     {
-        // dd($resource);
-
-        if ($response = $this->checkOwnership($resource)) {
-            return $response;
-        }
-
+        $this->checkOwnership($resource);
         try {
             DB::beginTransaction();
             $resource->update($validatedData);
@@ -71,6 +60,20 @@ class BaseCategoryController extends Controller
             DB::commit();
             $data = new BaseCategoryResource($updatedResource);
             return $this -> successResponse($data);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this -> serverErrorResponse($e);
+        }
+    }
+
+    protected function deleteResource(Model $resource) 
+    {
+        $this -> checkDelete($resource);
+        try {
+            DB::beginTransaction();
+            $resource->delete();
+            DB::commit();
+            return $this -> deleteResponse();
         } catch (\Exception $e) {
             DB::rollBack();
             return $this -> serverErrorResponse($e);

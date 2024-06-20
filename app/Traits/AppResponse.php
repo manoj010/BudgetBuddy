@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Http\Resources\Category\{BaseCategoryCollection, BaseCategoryResource};
 use Symfony\Component\HttpFoundation\Response;
 
 trait AppResponse
@@ -11,7 +12,7 @@ trait AppResponse
         return response()->json([
             'status' => $status,
             'code' => $code,
-            'data' => $data
+            'data' => new BaseCategoryResource($data)
         ], $code);
     }
 
@@ -20,11 +21,11 @@ trait AppResponse
         return response()->json([
             'status' => $status,
             'code' => $code,
-            'data' => $data
+            'data' => new BaseCategoryResource($data)
         ], $code);
     }
 
-    protected function deleteResponse($message, $status = 'success', $code = Response::HTTP_OK)
+    protected function deleteResponse($message = 'Resource deleted successfully', $status = 'success', $code = Response::HTTP_OK)
     {
         return response()->json([
             'status' => $status,
@@ -42,30 +43,30 @@ trait AppResponse
         ], $code);
     }
 
-    protected function findResource($resource, $id, $message = 'Category Not Found', $status = 'error', $code = Response::HTTP_NOT_FOUND)
+    protected function checkOrFindResource($resource, $id = null, $message = 'Resource not found', $status = 'error', $code = Response::HTTP_NOT_FOUND)
     {
         $userId = auth()->id();
-        $resource = $resource->where('user_id', $userId)->find($id);
-        if (!$resource) {
-            return response()->json([
-                'status' => $status,
-                'code' => $code,
-                'message' => $message
-            ], $code);
+        if ($id) {
+            $resource = $resource->where('user_id', $userId)->find($id);
+            if (!$resource) {
+                return response()->json([
+                    'status' => $status,
+                    'code' => $code,
+                    'message' => $message
+                ], $code);
+            }
+        } else {
+            $resources = $resource->where('user_id', $userId)->get();
+            if ($resources->isEmpty()) {
+                return response()->json([
+                    'status' => $status,
+                    'code' => $code,
+                    'message' => $message
+                ], $code);
+            }
+            return $resources;
         }
-        return null;
-    }
 
-    protected function checkResource($resource, $userId, $status = 'error', $code = Response::HTTP_NOT_FOUND)
-    {
-        $resources = $resource->where('user_id', $userId)->get();
-        if ($resources->isEmpty()) {
-            return response()->json([
-                'status' => $status,
-                'code' => $code,
-                'message' => 'No resources found for the authenticated user'
-            ], $code);
-        }
-        return null;
+        return $resource;
     }
 }

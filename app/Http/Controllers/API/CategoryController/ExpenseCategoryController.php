@@ -111,8 +111,7 @@ class ExpenseCategoryController extends Controller
             DB::beginTransaction();
             $expenseCategory->delete();
             DB::commit();
-            $message = 'Expense Category successfully Deleted';
-            return $this -> deleteResponse($message);
+            return $this -> deleteResponse();
         } catch (\Exception $e) {
             DB::rollBack();
             return $this -> serverErrorResponse($e);

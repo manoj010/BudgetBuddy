@@ -5,9 +5,6 @@ namespace App\Http\Controllers\API\CategoryController;
 use App\Http\Requests\BaseCategoryRequest;
 use App\Models\API\Category\IncomeCategory;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\Response;
 
 class IncomeCategoryController extends BaseCategoryController
 {
@@ -52,6 +49,9 @@ class IncomeCategoryController extends BaseCategoryController
     public function update(BaseCategoryRequest $request, $id)
     {
         $resource = $this->incomeCategory->find($id);
+        if (!$resource) {
+            return $this->notFoundResponse();
+        }
         $validatedData = $request->validated();
         return $this->updateResource($validatedData, $resource);
     }
@@ -59,36 +59,12 @@ class IncomeCategoryController extends BaseCategoryController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(IncomeCategory $incomeCategory)
+    public function destroy($id)
     {
-        $user = auth()->user();
-
-        // dd($user->id, $incomeCategory->user_id);
-
-        if ($incomeCategory->user_id !== $user->id) {
-            return response()->json([
-                'status' => 'error',
-                'code' => Response::HTTP_FORBIDDEN,
-                'message' => 'You do not have permission to delete this resource'
-            ], Response::HTTP_FORBIDDEN);
+        $resource = $this->incomeCategory->find($id);
+        if (!$resource) {
+            return $this->notFoundResponse();
         }
-
-        try {
-            DB::beginTransaction();
-            $incomeCategory->delete();
-            DB::commit();
-            return response()->json([
-                'status' => 'success',
-                'code' => Response::HTTP_OK,
-                'message' => 'Income Category successfully Deleted'
-            ], Response::HTTP_OK);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'status' => 'error',
-                'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
-                'message' => 'An error occurred: ' . $e->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        } 
+        return $this->deleteResource($resource);
     }
 }
