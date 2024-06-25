@@ -6,62 +6,50 @@ use Symfony\Component\HttpFoundation\Response;
 
 trait AppResponse
 {
-    protected function successResponse($data, $status = 'success', $code = Response::HTTP_OK)
+    protected function successResponse($data, $message = '', $status = Response::HTTP_OK)
     {
         return response()->json([
-            'status' => $status,
-            'code' => $code,
-            'data' => $data
-        ], $code);
-    }
-
-    protected function createdResponse($data, $status = 'success', $code = Response::HTTP_CREATED)
-    {
-        return response()->json([
-            'status' => $status,
-            'code' => $code,
-            'data' => $data
-        ], $code);
-    }
-
-    protected function deleteResponse($message = 'Resource deleted successfully', $status = 'success', $code = Response::HTTP_OK)
-    {
-        return response()->json([
-            'status' => $status,
-            'code' => $code,
+            'status' => 'success',
+            'data' => $data,
             'message' => $message
-        ], $code);
+        ], $status);
     }
 
-    protected function serverErrorResponse($e, $status = 'error', $code = Response::HTTP_INTERNAL_SERVER_ERROR)
+    protected function createdResponse($data, $message = '', $status = Response::HTTP_CREATED)
     {
         return response()->json([
-            'status' => $status,
-            'code' => $code,
-            'message' => 'An error occurred: ' . $e->getMessage(),
-        ], $code);
+            'status' => 'success',
+            'data' => $data,
+            'message' => $message
+        ], $status);
     }
 
-    protected function checkOrFindResource($resource, $id = null, $message = 'Resource not found', $status = 'error', $code = Response::HTTP_NOT_FOUND)
+    protected function serverErrorResponse($e, $status = Response::HTTP_INTERNAL_SERVER_ERROR)
+    {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'An error occurred: ' . $e->getMessage(),
+        ], $status);
+    }
+
+    protected function checkOrFindResource($resource, $id = null, $message = 'Resource not found', $status = Response::HTTP_NOT_FOUND)
     {
         $userId = auth()->id();
         if ($id) {
             $resource = $resource->where('user_id', $userId)->find($id);
             if (!$resource) {
                 return response()->json([
-                    'status' => $status,
-                    'code' => $code,
+                    'status' => 'error',
                     'message' => $message
-                ], $code);
+                ], $status);
             }
         } else {
             $resources = $resource->where('user_id', $userId)->get();
             if ($resources->isEmpty()) {
                 return response()->json([
-                    'status' => $status,
-                    'code' => $code,
+                    'status' => 'error',
                     'message' => $message
-                ], $code);
+                ], $status);
             }
             return $resources;
         }

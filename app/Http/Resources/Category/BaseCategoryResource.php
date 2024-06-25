@@ -7,19 +7,15 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class BaseCategoryResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
+        $category = $this -> resource;
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'description' => $this->description,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'id' => $category->id,
+            'name' => $category->name,
+            'description' => $category->description,
+            'created_at' => $category->created_at,
+            'updated_at' => $category->updated_at,
         ];
     }
 }

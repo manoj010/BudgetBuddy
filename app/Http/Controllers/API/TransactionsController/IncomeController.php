@@ -3,27 +3,22 @@
 namespace App\Http\Controllers\API\TransactionsController;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\IncomeRequest;
-use App\Http\Resources\Income\IncomeCollection;
-use App\Http\Resources\Income\IncomeResource;
 use App\Models\API\Transactions\Income;
-use App\Traits\UserOwnership;
-use App\Services\UserService;
-use App\Traits\ResourceNotFound;
-use Illuminate\Contracts\Auth\Authenticatable;
+use App\Http\Requests\IncomeRequest;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
+use App\Http\Resources\Income\{IncomeCollection, IncomeResource};
+use App\Traits\{AppErrorResponse, AppResponse, UserOwnership};
 
 class IncomeController extends Controller
 {
-    use UserOwnership, ResourceNotFound;
+    use AppResponse, UserOwnership, AppErrorResponse;
 
-    protected $income, $userService;
+    protected $income;
 
-    public function __construct(Income $income, UserService $userService)
+    public function __construct(Income $income)
     {
         $this->income = $income;
-        $this->userService = $userService;
     }
 
     /**
@@ -31,38 +26,20 @@ class IncomeController extends Controller
      */
     public function index()
     {
-        $userId = $this->userService->getUserId();
-
-        if ($response = $this->checkResource($this->income, $userId)) {
-            return $response;
-        }
-
-        $income = $this->income->where('user_id', $userId)->get();
+        $income = $this->income->where('user_id', auth()->id())->get();
         $totalIncome = $income->sum('amount');
-
-        return response()->json([
-            'status' => 'success',
-            'code' => Response::HTTP_OK,
-            'data' => new IncomeCollection($income),
-            'total_income' => $totalIncome
-        ], Response::HTTP_OK);
+        return $this->successResponse(new IncomeCollection($income), 'All Income');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(IncomeRequest $request, Authenticatable $user)
+    public function store(IncomeRequest $request)
     {
         try {
             DB::beginTransaction();
-            $income = $this->income->create([
-                'user_id' => $user->id,
-                'source' => $request->source,
-                'amount' => $request->amount,
-                'category_id' => $request->category_id,
-                'date_received' => $request->date_received,
-                'notes' => $request->notes
-            ]);
+            $validatedData = $request->validated();
+            $income = $this->income::create($validatedData);
             DB::commit();
 
             return response()->json([
