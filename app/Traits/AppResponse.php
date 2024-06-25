@@ -2,7 +2,6 @@
 
 namespace App\Traits;
 
-use App\Http\Resources\Category\{BaseCategoryCollection, BaseCategoryResource};
 use Symfony\Component\HttpFoundation\Response;
 
 trait AppResponse
@@ -12,7 +11,7 @@ trait AppResponse
         return response()->json([
             'status' => $status,
             'code' => $code,
-            'data' => new BaseCategoryResource($data)
+            'data' => $data
         ], $code);
     }
 
@@ -21,7 +20,7 @@ trait AppResponse
         return response()->json([
             'status' => $status,
             'code' => $code,
-            'data' => new BaseCategoryResource($data)
+            'data' => $data
         ], $code);
     }
 

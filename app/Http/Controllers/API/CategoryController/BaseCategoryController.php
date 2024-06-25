@@ -18,32 +18,31 @@ class BaseCategoryController extends Controller
         $userId = auth()->id();
         $this->checkOrFindResource($resource);
         $allResource = $resource->where('user_id', $userId)->get();
-        // $data = new BaseCategoryCollection($allResource);
-        return $this->successResponse($allResource);
+        return $this->successResponse(new BaseCategoryCollection($allResource));
     }
 
-    protected function createResource(array $validatedData, Model $resource, Authenticatable $user)
+    protected function createResource(array $validatedData, Model $resource)
     {
         try {
             DB::beginTransaction();
-            $validatedData['user_id'] = $user->id;
+            $validatedData['user_id'] = auth()->id();
             $createdResource = $resource->create($validatedData);
             DB::commit();
-            $data = new BaseCategoryResource($createdResource);
-            return $this->createdResponse($data);
+            return $this->createdResponse(new BaseCategoryResource($createdResource));
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->serverErrorResponse($e);
         }
     }
 
-    protected function specificResource(Model $resource, Authenticatable $user, $id)
+    protected function specificResource(Model $resource, $id)
     {
-        $this->checkOrFindResource($resource, $id);
-        $specificResource = $resource->where('user_id', $user->id)->find($id);
         try {
+            DB::beginTransaction(); 
+            $this->checkOrFindResource($resource, $id);
+            $specificResource = $resource->where('user_id', auth()->id())->find($id);
             DB::commit();
-            return $this -> successResponse($specificResource);
+            return $this -> successResponse(new BaseCategoryResource($specificResource));
         } catch (\Exception $e) {
             DB::rollBack();
             return $this -> serverErrorResponse($e);
@@ -52,14 +51,13 @@ class BaseCategoryController extends Controller
 
     protected function updateResource(array $validatedData, Model $resource)
     {
-        $this->checkOwnership($resource);
         try {
             DB::beginTransaction();
+            $this->checkOwnership($resource);
             $resource->update($validatedData);
             $updatedResource = $resource->fresh();
             DB::commit();
-            $data = new BaseCategoryResource($updatedResource);
-            return $this -> successResponse($data);
+            return $this -> successResponse(new BaseCategoryResource($updatedResource));
         } catch (\Exception $e) {
             DB::rollBack();
             return $this -> serverErrorResponse($e);
@@ -68,9 +66,9 @@ class BaseCategoryController extends Controller
 
     protected function deleteResource(Model $resource) 
     {
-        $this -> checkDelete($resource);
         try {
             DB::beginTransaction();
+            $this -> checkDelete($resource);
             $resource->delete();
             DB::commit();
             return $this -> deleteResponse();

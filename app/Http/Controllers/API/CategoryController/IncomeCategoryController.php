@@ -20,17 +20,16 @@ class IncomeCategoryController extends BaseCategoryController
      */
     public function index()
     {
-        $user = auth()->user();
-        return $this->allResource($this->incomeCategory, $user);
+        return $this->allResource($this->incomeCategory);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(BaseCategoryRequest $request, Authenticatable $user)
+    public function store(BaseCategoryRequest $request)
     {
         $validatedData = $request->validated();
-        return $this->createResource($validatedData, $this->incomeCategory, $user);
+        return $this->createResource($validatedData, $this->incomeCategory);
     }
 
 
@@ -39,8 +38,7 @@ class IncomeCategoryController extends BaseCategoryController
      */
     public function show($id)
     {
-        $user = auth()->user();
-        return $this->specificResource($this->incomeCategory, $user, $id);
+        return $this->specificResource($this->incomeCategory, $id);
     }
 
     /**
