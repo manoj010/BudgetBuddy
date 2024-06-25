@@ -4,7 +4,6 @@ namespace App\Http\Controllers\API\CategoryController;
 
 use App\Http\Requests\BaseCategoryRequest;
 use App\Models\API\Category\IncomeCategory;
-use Illuminate\Contracts\Auth\Authenticatable;
 
 class IncomeCategoryController extends BaseCategoryController
 {

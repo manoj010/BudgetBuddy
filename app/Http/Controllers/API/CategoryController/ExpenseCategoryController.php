@@ -2,25 +2,16 @@
 
 namespace App\Http\Controllers\API\CategoryController;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\BaseCategoryRequest;
-use App\Http\Resources\Category\{BaseCategoryCollection, BaseCategoryResource};
 use App\Models\API\Category\ExpenseCategory;
-use App\Services\UserService;
-use App\Traits\{AppResponse, UserOwnership};
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Support\Facades\DB;
 
-class ExpenseCategoryController extends Controller
+class ExpenseCategoryController extends BaseCategoryController
 {
-    use UserOwnership, AppResponse;
+    protected $expensesCategory;
 
-    protected $expensesCategory, $userService;
-
-    public function __construct(ExpenseCategory $expensesCategory, UserService $userService)
+    public function __construct(ExpenseCategory $expensesCategory)
     {
         $this->expensesCategory = $expensesCategory;
-        $this->userService = $userService;
     }
 
     /**
@@ -28,32 +19,16 @@ class ExpenseCategoryController extends Controller
      */
     public function index()
     {
-        $userId = $this->userService->getUserId();
-        if ($response = $this->checkResource($this->expensesCategory, $userId)) {
-            return $response;
-        }
-        $expenseCategories = $this->expensesCategory->where('user_id', $userId)->get();
-        $data = new BaseCategoryCollection($expenseCategories);
-        return $this->successResponse($data);
+        return $this->allResource($this->expensesCategory);
     }
     
     /**
      * Store a newly created resource in storage.
      */
-    public function store(BaseCategoryRequest $request, Authenticatable $user)
+    public function store(BaseCategoryRequest $request)
     {
-        try {
-            DB::beginTransaction();
-            $validatedData = $request -> validated();
-            $validatedData['user_id'] = $user->id;
-            $expensesCategory = $this->expensesCategory->create($validatedData);
-            DB::commit();
-            $data = new BaseCategoryResource($expensesCategory);
-            return $this->createdResponse($data);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return $this -> serverErrorResponse($e);
-        }
+        $validatedData = $request->validated();
+        return $this->createResource($validatedData, $this->expensesCategory);
     }
 
     /**
@@ -61,60 +36,31 @@ class ExpenseCategoryController extends Controller
      */
     public function show($id)
     {
-        $userId = auth()->id();
-
-        if ($response = $this->findResource($this->expensesCategory, $id)) {
-            return $response;
-        }
-
-        $expenseCategory = $this->expensesCategory->where('user_id', $userId)->find($id);
-        try {
-            $data = new BaseCategoryResource($expenseCategory);
-            return $this -> successResponse($data);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return $this -> serverErrorResponse($e);
-        }
+        return $this->specificResource($this->expensesCategory, $id);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(BaseCategoryRequest $request, ExpenseCategory $expenseCategory)
+    public function update(BaseCategoryRequest $request, $id)
     {
-        if ($response = $this->checkOwnership($expenseCategory)) {
-            return $response;
+        $resource = $this->expensesCategory->find($id);
+        if (!$resource) {
+            return $this->notFoundResponse();
         }
-
-        try {
-            DB::beginTransaction();
-            $expenseCategory->update($request->validated());
-            DB::commit();
-            $data = new BaseCategoryResource($expenseCategory);
-            return $this -> successResponse($data);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return $this -> serverErrorResponse($e);
-        }
+        $validatedData = $request->validated();
+        return $this->updateResource($validatedData, $resource);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ExpenseCategory $expenseCategory)
+    public function destroy($id)
     {
-        if ($response = $this->checkDelete($expenseCategory)) {
-            return $response;
+        $resource = $this->expensesCategory->find($id);
+        if (!$resource) {
+            return $this->notFoundResponse();
         }
-
-        try {
-            DB::beginTransaction();
-            $expenseCategory->delete();
-            DB::commit();
-            return $this -> deleteResponse();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return $this -> serverErrorResponse($e);
-        } 
+        return $this->deleteResource($resource);
     }
 }
