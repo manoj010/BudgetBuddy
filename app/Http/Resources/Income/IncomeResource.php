@@ -16,6 +16,7 @@ class IncomeResource extends JsonResource
     {
         $income = $this->resource;
         return [
+            'id' => $income->id,
             'category_id' => $income->category_id,
             'category_title' => $income->category->name,
             'date_received' => $income->date_received, 

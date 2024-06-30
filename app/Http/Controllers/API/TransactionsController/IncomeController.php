@@ -55,7 +55,6 @@ class IncomeController extends Controller
     {
         try {
             DB::beginTransaction(); 
-            dd($this->income, $id);
             $this->checkOrFindResource($this->income, $id);
             $specificResource = $this->income->where('user_id', auth()->id())->find($id);
             DB::commit(); 
@@ -70,26 +69,15 @@ class IncomeController extends Controller
      */
     public function update(IncomeRequest $request, Income $income)
     {
-        if ($response = $this->checkOwnership($income)) {
-            return $response;
-        }
-
+        $this->checkOwnership($income);
         try {
             DB::beginTransaction();
             $income->update($request->validated());
             DB::commit();
-            return response()->json([
-                'status' => 'success',
-                'code' => Response::HTTP_OK,
-                'data' => new IncomeResource($income),
-            ], Response::HTTP_OK);
+            return $this -> success(new IncomeResource($income), 'Income updated Successfully', Response::HTTP_OK);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status' => 'error',
-                'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
-                'message' => 'An error occurred: ' . $e->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this -> error($e);
         }
     }
     
@@ -97,8 +85,17 @@ class IncomeController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Income $income)
     {
-        //
+        $this->checkOwnership($income);
+        try {
+            DB::beginTransaction();
+            $income->delete();
+            DB::commit();
+            return $this->success('Income deleted Successfully', Response::HTTP_OK);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this -> error($e);
+        }
     }
 }

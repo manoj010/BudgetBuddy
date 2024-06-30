@@ -2,13 +2,13 @@
 
 namespace App\Http\Requests;
 
-use App\Traits\AppErrorResponse;
+use App\Traits\AppResponse;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class IncomeRequest extends FormRequest
 {
-    use AppErrorResponse;
+    use AppResponse;
     
     /**
      * Determine if the user is authorized to make this request.

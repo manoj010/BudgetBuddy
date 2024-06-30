@@ -68,13 +68,13 @@ class BaseCategoryController extends Controller
     {
         try {
             DB::beginTransaction();
-            $this -> checkDelete($resource); 
+            $this -> checkOwnership($resource); 
             // $resource->update([
             //     "archived_by" => request()->header('X-User-Id')
             // ]);
             $resource->delete();
             DB::commit();
-            return $this->success('Category deleted Successfully ',Response::HTTP_OK);
+            return $this->success('Category deleted Successfully', Response::HTTP_OK);
         } catch (\Exception $e) {
             DB::rollBack();
             return $this -> error($e);
