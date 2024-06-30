@@ -4,21 +4,21 @@ namespace App\Http\Controllers\API\CategoryController;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Category\{BaseCategoryCollection, BaseCategoryResource};
-use App\Traits\{AppErrorResponse, AppResponse, UserOwnership};
+use App\Traits\{AppResponse, UserOwnership};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
     
 class BaseCategoryController extends Controller
 {    
-    use AppResponse, UserOwnership, AppErrorResponse;
+    use AppResponse, UserOwnership;
 
     protected function allResource(Model $resource)
     {
         $userId = auth()->id();
         $this->checkOrFindResource($resource);
         $allResource = $resource->where('user_id', $userId)->get();
-        return $this->successResponse(new BaseCategoryCollection($allResource), 'All Category Data', Response::HTTP_OK);
+        return $this->success(new BaseCategoryCollection($allResource), 'All Category Data', Response::HTTP_OK);
     }
 
     protected function createResource(array $validatedData, Model $resource)
@@ -28,7 +28,7 @@ class BaseCategoryController extends Controller
             $validatedData['user_id'] = auth()->id();
             $createdResource = $resource->create($validatedData);
             DB::commit();
-            return $this->createdResponse(new BaseCategoryResource($createdResource), 'Category Item Created Successfully', Response::HTTP_CREATED);
+            return $this->success(new BaseCategoryResource($createdResource), 'Category Item Created Successfully', Response::HTTP_CREATED);
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->serverErrorResponse($e);
@@ -42,10 +42,10 @@ class BaseCategoryController extends Controller
             $this->checkOrFindResource($resource, $id);
             $specificResource = $resource->where('user_id', auth()->id())->find($id);
             DB::commit();
-            return $this -> successResponse(new BaseCategoryResource($specificResource));
+            return $this -> success(new BaseCategoryResource($specificResource));
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this -> serverErrorResponse($e);
+            return $this -> error($e);
         }
     }
 
@@ -57,10 +57,10 @@ class BaseCategoryController extends Controller
             $resource->update($validatedData);
             $updatedResource = $resource->fresh();
             DB::commit();
-            return $this -> successResponse(new BaseCategoryResource($updatedResource), 'Category Updated Successfully', Response::HTTP_OK);
+            return $this -> success(new BaseCategoryResource($updatedResource), 'Category Updated Successfully', Response::HTTP_OK);
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this -> serverErrorResponse($e);
+            return $this -> error($e);
         }
     }
 
@@ -74,10 +74,10 @@ class BaseCategoryController extends Controller
             // ]);
             $resource->delete();
             DB::commit();
-            return $this->successResponse('Category deleted Successfully ',Response::HTTP_OK);
+            return $this->success('Category deleted Successfully ',Response::HTTP_OK);
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this -> serverErrorResponse($e);
+            return $this -> error($e);
         }
     }
 }

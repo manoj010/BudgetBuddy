@@ -47,7 +47,7 @@ class IncomeCategoryController extends BaseCategoryController
     {
         $resource = $this->incomeCategory->find($id);
         if (!$resource) {
-            return $this->notFoundResponse();
+            return $this->notFound();
         }
         $validatedData = $request->validated();
         return $this->updateResource($validatedData, $resource);
@@ -60,7 +60,7 @@ class IncomeCategoryController extends BaseCategoryController
     {
         $resource = $this->incomeCategory->find($id);
         if (!$resource) {
-            return $this->notFoundResponse();
+            return $this->notFound();
         }
         return $this->deleteResource($resource);
     }

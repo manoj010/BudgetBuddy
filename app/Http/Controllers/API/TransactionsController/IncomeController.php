@@ -8,11 +8,11 @@ use App\Http\Requests\IncomeRequest;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 use App\Http\Resources\Income\{IncomeCollection, IncomeResource};
-use App\Traits\{AppErrorResponse, AppResponse, UserOwnership};
+use App\Traits\{AppResponse, UserOwnership};
 
 class IncomeController extends Controller
 {
-    use AppResponse, UserOwnership, AppErrorResponse;
+    use AppResponse, UserOwnership;
 
     protected $income;
 
@@ -27,8 +27,7 @@ class IncomeController extends Controller
     public function index()
     {
         $income = $this->income->where('user_id', auth()->id())->get();
-        $totalIncome = $income->sum('amount');
-        return $this->successResponse(new IncomeCollection($income), 'All Income');
+        return $this->success(new IncomeCollection($income), 'All Income');
     }
 
     /**
@@ -39,53 +38,30 @@ class IncomeController extends Controller
         try {
             DB::beginTransaction();
             $validatedData = $request->validated();
+            $validatedData['user_id'] = auth()->id();
             $income = $this->income::create($validatedData);
             DB::commit();
-
-            return response()->json([
-                'status' => 'success',
-                'code' => Response::HTTP_CREATED,
-                'data' => new IncomeResource($income)
-            ], Response::HTTP_CREATED);
+            return $this->success(new IncomeResource($income), 'Income created successfully', Response::HTTP_CREATED);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status' => 'error',
-                'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
-                'message' => 'An error occurred: ' . $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->error($e);
         }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show($incomeId = null)
+    public function show($id)
     {
-        $user = auth()->user();
-
-        $income = $this->income->where('user_id', $user->id)->find($incomeId);
-
-        if (is_null($income)) {
-            return response()->json([
-                'status' => 'error',
-                'code' => Response::HTTP_NOT_FOUND,
-                'message' => 'Income not found'
-            ], Response::HTTP_NOT_FOUND);
-        }
-
         try {
-            return response()->json([
-                'status' => 'success',
-                'code' => Response::HTTP_OK,
-                'data' => new IncomeResource($income)
-            ], Response::HTTP_OK);
+            DB::beginTransaction(); 
+            dd($this->income, $id);
+            $this->checkOrFindResource($this->income, $id);
+            $specificResource = $this->income->where('user_id', auth()->id())->find($id);
+            DB::commit(); 
+            return $this -> success(new IncomeResource($specificResource));
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
-                'message' => 'An error occurred: ' . $e->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->error($e);
         }
     }
 

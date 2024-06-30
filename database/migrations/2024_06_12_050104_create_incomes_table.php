@@ -17,7 +17,6 @@ return new class extends Migration
         Schema::create('incomes', function (Blueprint $table) {
             $this->addCommonColumns($table);
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('source');
             $table->decimal('amount', 10, 2);
             $table->foreignId('category_id')->constrained('income_categories')->onDelete('cascade');
             $table->date('date_received');

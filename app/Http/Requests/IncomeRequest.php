@@ -28,7 +28,6 @@ class IncomeRequest extends FormRequest
         $userId = auth()->id();
 
         return [
-            'source' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0',
             'category_id' => [
                 'required',
