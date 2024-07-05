@@ -2,7 +2,7 @@
 
 namespace App\Models\API\Transactions;
 
-class Income extends BaseTransaction
+class Expense extends BaseTransaction
 {
     protected $fillable = ['user_id', 'amount', 'category_id', 'date_spent', 'notes', 'recurring'];
 }
