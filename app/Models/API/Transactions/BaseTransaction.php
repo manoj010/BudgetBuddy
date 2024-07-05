@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class BaseTransactions extends Model
+class BaseTransaction extends Model
 {
     use HasFactory, SoftDeletes;
 
