@@ -50,7 +50,6 @@ class Handler extends ExceptionHandler
         });
     }
 
-    //Unauthorized
     protected function unauthenticated($request, AuthenticationException $exception)
     {
         return response()->json([
@@ -60,7 +59,6 @@ class Handler extends ExceptionHandler
         ], Response::HTTP_UNAUTHORIZED);
     }
 
-    //Resource Doesn't Exist 
     public function render($request, Throwable $exception)
     {
         if ($exception instanceof ModelNotFoundException || $exception instanceof NotFoundHttpException) {
@@ -70,7 +68,6 @@ class Handler extends ExceptionHandler
                 'message' => 'Not Found'
             ], Response::HTTP_NOT_FOUND);
         }
-
         return parent::render($request, $exception);
     }
 }

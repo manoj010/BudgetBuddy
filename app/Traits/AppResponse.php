@@ -8,6 +8,18 @@ use Illuminate\Contracts\Validation\Validator;
 
 trait AppResponse
 {
+    protected function checkOwnership($resource, $message = 'Permission Denied.', $status = Response::HTTP_FORBIDDEN)
+    {
+        $user = auth()->user();
+        if ($resource->user_id !== $user->id) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $message
+            ], $status);
+        }
+        return null;
+    }
+
     protected function success($data, $message = '', $status = Response::HTTP_OK)
     {
         return response()->json([
@@ -48,7 +60,7 @@ trait AppResponse
     {
         $userId = auth()->id();
         if ($id) {
-            $resource = $resource->where('user_id', $userId)->find($id);
+            $resource = $resource->where('created_by', $userId)->find($id);
             if (!$resource) {
                 return response()->json([
                     'status' => 'error',
@@ -56,7 +68,7 @@ trait AppResponse
                 ], $status);
             }
         } else {
-            $resources = $resource->where('user_id', $userId)->get();
+            $resources = $resource->where('created_by', $userId)->get();
             if ($resources->isEmpty()) {
                 return response()->json([
                     'status' => 'error',

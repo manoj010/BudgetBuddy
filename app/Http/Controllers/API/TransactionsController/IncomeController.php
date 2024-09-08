@@ -26,7 +26,7 @@ class IncomeController extends Controller
      */
     public function index()
     {
-        $income = $this->income->where('user_id', auth()->id())->get();
+        $income = $this->income->where('created_by', auth()->id())->get();
         return $this->success(new IncomeCollection($income), 'All Income');
     }
 
@@ -38,7 +38,6 @@ class IncomeController extends Controller
         try {
             DB::beginTransaction();
             $validatedData = $request->validated();
-            $validatedData['user_id'] = auth()->id();
             $income = $this->income::create($validatedData);
             DB::commit();
             return $this->success(new IncomeResource($income), 'Income created successfully', Response::HTTP_CREATED);
@@ -54,11 +53,11 @@ class IncomeController extends Controller
     public function show($id)
     {
         try {
-            DB::beginTransaction(); 
+            DB::beginTransaction();
             $this->checkOrFindResource($this->income, $id);
-            $specificResource = $this->income->where('user_id', auth()->id())->find($id);
-            DB::commit(); 
-            return $this -> success(new IncomeResource($specificResource));
+            $specificResource = $this->income->where('created_by', auth()->id())->find($id);
+            DB::commit();
+            return $this->success(new IncomeResource($specificResource));
         } catch (\Exception $e) {
             return $this->error($e);
         }
@@ -74,13 +73,13 @@ class IncomeController extends Controller
             DB::beginTransaction();
             $income->update($request->validated());
             DB::commit();
-            return $this -> success(new IncomeResource($income), 'Income updated Successfully', Response::HTTP_OK);
+            return $this->success(new IncomeResource($income), 'Income updated Successfully', Response::HTTP_OK);
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this -> error($e);
+            return $this->error($e);
         }
     }
-    
+
 
     /**
      * Remove the specified resource from storage.
@@ -95,7 +94,7 @@ class IncomeController extends Controller
             return $this->success('Income deleted Successfully', Response::HTTP_OK);
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this -> error($e);
+            return $this->error($e);
         }
     }
 }
