@@ -2,13 +2,9 @@
 
 namespace App\Models\API\Category;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\BaseModel;
 
-class BaseCategory extends Model
+class BaseCategory extends BaseModel
 {
-    use HasFactory, SoftDeletes;
-
-    protected $fillable = ['user_id', 'name', 'description'];
+    protected $fillable = ['name', 'description'];
 }

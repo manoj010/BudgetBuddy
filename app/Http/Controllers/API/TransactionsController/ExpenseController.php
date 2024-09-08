@@ -26,7 +26,7 @@ class ExpenseController extends Controller
      */
     public function index()
     {
-        $expense = $this->expense->where('user_id', auth()->id())->get();
+        $expense = $this->expense->where('created_by', auth()->id())->get();
         return $this->success(new ExpenseCollection($expense), 'All Expenses');
     }
 
@@ -38,7 +38,6 @@ class ExpenseController extends Controller
         try {
             DB::beginTransaction();
             $validatedData = $request->validated();
-            $validatedData['user_id'] = auth()->id();
             $expense = $this->expense::create($validatedData);
             DB::commit();
             return $this->success(new ExpenseResource($expense), 'Expense created successfully', Response::HTTP_CREATED);
@@ -54,11 +53,11 @@ class ExpenseController extends Controller
     public function show($id)
     {
         try {
-            DB::beginTransaction(); 
+            DB::beginTransaction();
             $this->checkOrFindResource($this->expense, $id);
-            $specificResource = $this->expense->where('user_id', auth()->id())->find($id);
-            DB::commit(); 
-            return $this -> success(new ExpenseResource($specificResource));
+            $specificResource = $this->expense->where('created_by', auth()->id())->find($id);
+            DB::commit();
+            return $this->success(new ExpenseResource($specificResource));
         } catch (\Exception $e) {
             return $this->error($e);
         }
@@ -74,13 +73,13 @@ class ExpenseController extends Controller
             DB::beginTransaction();
             $expense->update($request->validated());
             DB::commit();
-            return $this -> success(new ExpenseResource($expense), 'Expense updated Successfully', Response::HTTP_OK);
+            return $this->success(new ExpenseResource($expense), 'Expense updated Successfully', Response::HTTP_OK);
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this -> error($e);
+            return $this->error($e);
         }
     }
-    
+
 
     /**
      * Remove the specified resource from storage.
@@ -95,7 +94,7 @@ class ExpenseController extends Controller
             return $this->success('Expense deleted Successfully', Response::HTTP_OK);
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this -> error($e);
+            return $this->error($e);
         }
     }
 }
